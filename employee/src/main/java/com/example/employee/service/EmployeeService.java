@@ -3,6 +3,7 @@ package com.example.employee.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,14 +41,27 @@ public class EmployeeService {
         return false;
     }
 
-    public EmployeeModel updateEmployee(Long id, EmployeeModel employeeModel){
-        EmployeeModel existingEmployee = employeeRepository.findById(id).orElse(null);
+    public Optional<EmployeeModel> updateEmployee(Long id, EmployeeModel employeeModel){
+        Optional<EmployeeModel> existingEmployee = employeeRepository.findById(id);
 
-        if(existingEmployee != null){
-            existingEmployee.setName(employeeModel.getName());
-            
+        if(existingEmployee.isPresent()){
+            EmployeeModel employee = existingEmployee.get();
+            if(employeeModel.getName() != null){
+                employee.setName(employeeModel.getName());
+            }
+            if(employeeModel.getAge() != null){
+                employee.setAge(employeeModel.getAge());
+            }
+            if(employeeModel.getEmail() != null){
+                employee.setEmail(employeeModel.getEmail());
+            }
+            if(employeeModel.getPhone() != null){    
+                employee.setPhone(employeeModel.getPhone());
+
+            }
+            return Optional.of(employeeRepository.save(employee));
         }
-        return employeeRepository.save(existingEmployee);
+        return Optional.empty();
     }
 
     @Transactional
@@ -59,14 +73,29 @@ public class EmployeeService {
                 case "create":
                     EmployeeModel newEmployee = new EmployeeModel();
                     newEmployee.setName(operation.getName());
+                    newEmployee.setAge(operation.getAge());
+                    newEmployee.setEmail(operation.getEmail());
+                    newEmployee.setPhone(operation.getPhone());
                     updatedEmployees.add(employeeRepository.save(newEmployee));
                     break;
 
                 case "update":
                     if (operation.getId() != null) {
-                        EmployeeModel existingEmployee = employeeRepository.findById(operation.getId()).orElse(null);
-                        if (existingEmployee != null) {
-                            existingEmployee.setName(operation.getName());
+                        Optional<EmployeeModel> existingEmployeeOpt = employeeRepository.findById(operation.getId());
+                        if (existingEmployeeOpt.isPresent()) {
+                            EmployeeModel existingEmployee = existingEmployeeOpt.get();
+                            if (operation.getName() != null) {
+                                existingEmployee.setName(operation.getName());
+                            }
+                            if (operation.getAge() != null) {
+                                existingEmployee.setAge(operation.getAge());
+                            }
+                            if (operation.getEmail() != null) {
+                                existingEmployee.setEmail(operation.getEmail());
+                            }
+                            if (operation.getPhone() != null) {
+                                existingEmployee.setPhone(operation.getPhone());
+                            }
                             updatedEmployees.add(employeeRepository.save(existingEmployee));
                         }
                     }
@@ -85,4 +114,5 @@ public class EmployeeService {
 
         return updatedEmployees;
     }
+
 }

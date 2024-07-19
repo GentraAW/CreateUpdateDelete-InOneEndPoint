@@ -16,4 +16,7 @@ public class EmployeeModel {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
+    private Integer age;
+    private String email;
+    private Long phone;
 }

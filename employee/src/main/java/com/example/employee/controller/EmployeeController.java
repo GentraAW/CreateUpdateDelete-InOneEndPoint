@@ -1,6 +1,7 @@
 package com.example.employee.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,13 +26,22 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
      @GetMapping
-    public List<EmployeeModel> getAllEmployees() {
-        return employeeService.getAllEmployee();
+    public ResponseEntity<?> getAllEmployees() {
+        List<EmployeeModel> employee = employeeService.getAllEmployee();
+        if(employee.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tidak ada data");
+        }else{
+            return ResponseEntity.ok(employee);
+        }
     }
 
     @GetMapping("/{id}")
-    public EmployeeModel getEmployeeById(@PathVariable Long id) {
-        return employeeService.getEmployeeById(id);
+    public ResponseEntity<?> getEmployeeById(@PathVariable Long id) {
+        EmployeeModel employee = employeeService.getEmployeeById(id);
+        if (employee == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Id : " + id + " tidak ditemukan");
+        }
+        return ResponseEntity.ok(employee);
     }
 
     @PostMapping
@@ -40,12 +50,21 @@ public class EmployeeController {
     }
 
     @PutMapping("/{id}")
-    public EmployeeModel updateEmployee(@PathVariable Long id, @RequestBody EmployeeModel employeeDetails) {
-        return employeeService.updateEmployee(id, employeeDetails);
+    public ResponseEntity<?> updateEmployee(@PathVariable Long id, @RequestBody EmployeeModel employeeDetails) {
+        Optional<EmployeeModel> employee = employeeService.updateEmployee(id, employeeDetails);
+        try{
+            if(employee.isPresent()){
+                return ResponseEntity.ok(employee.get());
+            }else{
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Id : " + id + "Tidak tersedia");
+            }
+        }catch (Exception e){
+            return ResponseEntity.ok(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
+    public ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
         boolean isDeleted = employeeService.deleteEmployee(id);
         if (!isDeleted) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Id : " + id + " tidak ditemukan");
